@@ -152,7 +152,7 @@ const server=http.createServer((req,res)=>{
                     }
                     else {
                         res.writeHead(500);
-                        res.end('Sorry, check with the site admin for error: '+error.code+' ..\n');
+                        res.end('error: '+error.code+' ..\n');
                     }
                 }
                 else {
