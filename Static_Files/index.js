@@ -109,7 +109,7 @@ const http=require("node:http")
 const fs=require("node:fs")
 const path=require('node:path')
 
-const mimeTypes=require('./mimeType.js')
+const {mimeTypes}=require('./mimeType.js')
 
 const dotenv=require('dotenv')
 dotenv.config()
@@ -128,38 +128,42 @@ const server=http.createServer((req,res)=>{
      }
 
     else if(req.url){
+        try{
+            let filePath=req.url
 
-    let filePath=req.url
-
-        if(filePath==='/'){
-            filePath='public/index.html'
-        }
-        else{
-            filePath=path.join('public',filePath)
-        }
-    
-        let ext=String(path.extname(filePath).toLowerCase())
-    
-        let contentType=mimeTypes.mimeTypes[ext]
-    
-        fs.readFile(filePath, function(error, content) {
-            if (error) {
-                if(error.code == 'ENOENT') {
-                    fs.readFile('public/404.html', function(error, content) {
-                        res.writeHead(404, { 'content-type': 'text/html' });
-                        res.end(content, 'utf-8');
-                    });
+            if(filePath==='/'){
+                filePath='public/index.html'
+            }
+            else{
+                filePath=path.join('public',filePath)
+            }
+        
+            let ext=String(path.extname(filePath).toLowerCase())
+        
+            let contentType=mimeTypes[ext]
+        
+            fs.readFile(filePath, function(error, content) {
+                if (error) {
+                    if(error.code == 'ENOENT') {
+                        fs.readFile('public/404.html', function(error, content) {
+                            res.writeHead(404, { 'content-type': 'text/html' });
+                            res.end(content, 'utf-8');
+                        });
+                    }
+                    else {
+                        res.writeHead(500);
+                        res.end('Sorry, check with the site admin for error: '+error.code+' ..\n');
+                    }
                 }
                 else {
-                    res.writeHead(500);
-                    res.end('Sorry, check with the site admin for error: '+error.code+' ..\n');
+                    res.writeHead(200, { 'content-type': contentType });
+                    res.end(content, 'utf-8');
                 }
-            }
-            else {
-                res.writeHead(200, { 'content-type': contentType });
-                res.end(content, 'utf-8');
-            }
-        });    
+            });    
+        }
+        catch(err){
+            res.end(err.message)
+        }
     }
 
      else{
